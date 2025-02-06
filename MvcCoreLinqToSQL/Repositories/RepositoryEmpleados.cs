@@ -84,5 +84,45 @@ namespace MvcCoreLinqToSQL.Repositories
             }
 
         }
+
+        public ResumenEmpleados GetEmpleadosOficio(string oficio)
+        {
+            var consulta = from datos in this.tablaEmpleados.AsEnumerable() where datos.Field<string>("OFICIO") == oficio select datos;
+            consulta = consulta.OrderBy(z => z.Field<int>("salario"));
+            int personas = consulta.Count();
+            int maximo = consulta.Max(z => z.Field<int>("salario"));
+            double media = consulta.Average(z => z.Field<int>("salario"));
+
+            List<Empleado> empleados = new List<Empleado>();
+
+            foreach(var row in consulta)
+            {
+                Empleado empleado = new Empleado
+                {
+                    IdEmpleado = row.Field<int>("EMP_NO"),
+                    Apellido = row.Field<string>("APELLIDO"),
+                    Oficio = row.Field<string>("OFICIO"),
+                    Salario = row.Field<int>("SALARIO"),
+                    IdDepartamento = row.Field<int>("DEPT_NO"),
+                };
+                empleados.Add(empleado);
+            }
+
+            ResumenEmpleados resumen = new ResumenEmpleados();
+
+            resumen.Personas = personas;
+            resumen.MaximoSalario = maximo;
+            resumen.MediaSalario = media;
+            resumen.Empleados = empleados;
+
+            return resumen;
+        }
+
+        public List<string> GetOficios()
+        {
+            var consulta = (from datos in this.tablaEmpleados.AsEnumerable() select datos.Field<string>("oficio")).Distinct();
+            
+            return consulta.ToList();
+        }
     }
 }
